@@ -1,0 +1,46 @@
+/* Comparative statement grid (SCR-CMP-01) and award recommendation (SCR-CMP-02). Brand tokens only. */
+.cmp-grid-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.cmp-grid { border-collapse: separate; border-spacing: 0; font-size: var(--fs-13); min-width: 100%; }
+.cmp-grid th, .cmp-grid td { padding: 6px 10px; border-bottom: 1px solid var(--steel-100); white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; }
+.cmp-grid thead th { position: sticky; top: 0; z-index: 3; background: var(--steel-25); font-size: var(--fs-12); color: var(--text-2); font-weight: 600; border-bottom: 1px solid var(--line); vertical-align: bottom; min-width: 150px; }
+.cmp-grid .cmp-first { position: sticky; left: 0; z-index: 2; background: #fff; text-align: left; min-width: 230px; max-width: 280px; white-space: normal; box-shadow: 1px 0 0 var(--line); }
+.cmp-grid thead .cmp-first { z-index: 4; background: var(--steel-25); }
+.cmp-grid .cmp-line td, .cmp-grid .cmp-line th { background: var(--primary-50); border-top: 1px solid var(--line); }
+.cmp-grid .cmp-line .cmp-first { background: var(--primary-50); }
+.cmp-grid .cmp-metric { color: var(--text-2); font-weight: 500; }
+.cmp-grid td.is-lowest { background: var(--amber-50); }
+.cmp-grid tr.cmp-key td { font-weight: 700; color: var(--primary-900); }
+.cmp-grid tr.cmp-key td.is-lowest { box-shadow: inset 0 -2px 0 var(--amber-500); }
+.cmp-grid td.is-awarded { outline: 2px solid var(--berry-600); outline-offset: -2px; }
+.cmp-grid td.is-noquote { color: var(--text-3); font-style: italic; }
+.cmp-grid tfoot td { font-weight: 700; background: var(--steel-25); border-top: 2px solid var(--line); }
+.cmp-grid tfoot .cmp-first { background: var(--steel-25); }
+.cmp-vhead { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; white-space: normal; text-align: right; }
+.cmp-vhead strong { color: var(--primary-900); font-size: var(--fs-13); }
+.cmp-tags { display: inline-flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; }
+.cmp-var-up { color: var(--bad); }
+.cmp-var-down { color: var(--ok); }
+.cmp-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: var(--fs-12); color: var(--text-2); padding: 10px 14px; border-top: 1px solid var(--line); }
+.cmp-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 4px; }
+
+/* phone: per-line cards with vendors ranked */
+.cmp-cards { display: none; }
+@media (max-width: 760px) {
+  .cmp-grid-wrap { display: none; }
+  .cmp-cards { display: flex; flex-direction: column; gap: 12px; padding: 12px; }
+}
+.cmp-card { border: 1px solid var(--line); border-radius: var(--r-md); background: #fff; overflow: hidden; }
+.cmp-card__head { padding: 10px 12px; background: var(--primary-50); border-bottom: 1px solid var(--line); }
+.cmp-card__vendor { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 4px 10px; padding: 10px 12px; border-bottom: 1px solid var(--steel-100); align-items: start; }
+.cmp-card__vendor:last-child { border-bottom: 0; }
+.cmp-card__vendor[data-lowest='true'] { background: var(--amber-50); }
+.cmp-rank { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: var(--fs-12); background: var(--steel-100); color: var(--steel-700); }
+.cmp-card__vendor[data-lowest='true'] .cmp-rank { background: var(--amber-500); color: var(--primary-900); }
+
+/* recommendation */
+.rec-line { border: 1px solid var(--line); border-radius: var(--r-md); padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.rec-option { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 8px 10px; border-radius: var(--r-sm); border: 1px solid var(--steel-100); cursor: pointer; }
+.rec-option[data-on='true'] { border-color: var(--berry-600); background: var(--berry-100); }
+.rec-option[data-disabled='true'] { opacity: 0.6; cursor: not-allowed; }
+.rec-option input { margin: 0; }
+@media (max-width: 640px) { .rec-option { grid-template-columns: 22px minmax(0, 1fr); } .rec-option > :last-child { grid-column: 2; } }

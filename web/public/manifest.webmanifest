@@ -1,0 +1,9 @@
+{
+  "name": "Equipcare Source-to-Pay",
+  "short_name": "Equipcare S2P",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f5f7",
+  "theme_color": "#46205c",
+  "icons": [{ "src": "/brand/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

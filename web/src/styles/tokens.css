@@ -1,0 +1,107 @@
+/*
+ * Equipcare design tokens.
+ * Primary: purple (brand plum #7A3D97 from equipcare.in). Secondary: amber #F4B719 (the logo mark).
+ * Space Grotesk (display) and Inter (text); JetBrains Mono for document numbers and codes.
+ */
+:root {
+  /* Brand: purple primary, amber secondary */
+  --primary-950: #1d0b2b;
+  --primary-900: #2f1442;
+  --primary-800: #46205c;
+  --primary-700: #5f2d78;
+  --primary-600: #7a3d97;
+  --primary-500: #9558b3;
+  --primary-300: #c8a4dc;
+  --primary-100: #ecdff5;
+  --primary-50: #f6f0fa;
+  --amber-700: #a86f00;
+  --amber-600: #d99a06;
+  --amber-500: #f4b719;
+  --amber-300: #f9d77a;
+  --amber-100: #fdf1cc;
+  --amber-50: #fffaeb;
+  /* Decisions and approvals use a distinct berry so they never read as the primary colour */
+  --berry-700: #7e1f54;
+  --berry-600: #a1286b;
+  --berry-100: #f9e6f0;
+
+  /* Neutrals (cool steel, not cream) */
+  --steel-0: #ffffff;
+  --steel-25: #fbfafc;
+  --steel-50: #f5f3f8;
+  --steel-100: #ece9f1;
+  --steel-200: #dedae6;
+  --steel-300: #c9c4d4;
+  --steel-400: #9d97ab;
+  --steel-500: #6e687c;
+  --steel-600: #514b60;
+  --steel-700: #3a3548;
+  --ink: #190f26;
+
+  /* Semantic */
+  --bg: var(--steel-50);
+  --surface: var(--steel-0);
+  --surface-sunk: var(--steel-25);
+  --line: var(--steel-200);
+  --line-strong: var(--steel-300);
+  --text: var(--ink);
+  --text-2: var(--steel-600);
+  --text-3: var(--steel-500);
+  --focus: #8a45b0;
+
+  --ok: #17784a;
+  --ok-bg: #e5f4ec;
+  --warn: #9a5b00;
+  --warn-bg: #fdf1d8;
+  --bad: #b42d23;
+  --bad-bg: #fbe9e7;
+  --info: #5f2d78;
+  --info-bg: #f3ecf8;
+  --neutral-bg: var(--steel-100);
+  --decision: var(--berry-600);
+  --decision-bg: var(--berry-100);
+
+  /* Type */
+  --font-display: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+  --font-text: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  --fs-11: 0.6875rem;
+  --fs-12: 0.75rem;
+  --fs-13: 0.8125rem;
+  --fs-14: 0.875rem;
+  --fs-15: 0.9375rem;
+  --fs-16: 1rem;
+  --fs-18: 1.125rem;
+  --fs-20: 1.25rem;
+  --fs-24: 1.5rem;
+  --fs-30: 1.875rem;
+  --fs-38: 2.375rem;
+
+  /* Space & shape */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-12: 48px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-pill: 999px;
+
+  --shadow-1: 0 1px 2px rgba(47, 20, 66, 0.06), 0 1px 1px rgba(47, 20, 66, 0.04);
+  --shadow-2: 0 4px 14px rgba(47, 20, 66, 0.08), 0 1px 3px rgba(47, 20, 66, 0.06);
+  --shadow-3: 0 18px 48px rgba(29, 11, 43, 0.20), 0 3px 10px rgba(29, 11, 43, 0.10);
+
+  --rail-w: 252px;
+  --rail-w-collapsed: 72px;
+  --topbar-h: 60px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur: 160ms;
+
+  color-scheme: light;
+}
