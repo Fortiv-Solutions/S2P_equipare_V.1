@@ -12,6 +12,7 @@ import { module as payments } from './payments/index.ts';
 import { module as sap } from './sap/index.ts';
 import { module as reports } from './reports/index.ts';
 import { module as admin } from './admin/index.ts';
+import { module as insights } from './insights/index.ts';
 import { module as home } from './home/index.ts';
 
-export const MODULES: ModuleDef[] = [pr, rfq, cmp, approvals, contracts, po, asn, vendors, invoices, payments, sap, reports, admin, home];
+export const MODULES: ModuleDef[] = [pr, rfq, cmp, approvals, contracts, po, asn, vendors, invoices, payments, sap, reports, admin, insights, home];

@@ -7,6 +7,7 @@ import { ago, fmtDate } from '@/lib/format';
 import { Badge, Card, Empty, Freshness, Kpi, LoadingBlock, ErrorState, PageHeader } from '@/components/ui';
 import { Bars } from '@/components/charts';
 import { navFor } from '@/nav';
+import AdminHome from './AdminHome';
 
 interface Tile { key: string; label: string; value: number | string; meta?: string; tone?: 'ok' | 'warn' | 'bad'; link?: string }
 interface Task { title: string; subtitle?: string; link: string; tone?: 'ok' | 'warn' | 'bad' | 'info' | 'decision'; tag?: string; due?: string | null }
@@ -28,8 +29,14 @@ const ROLE_SUB: Record<string, string> = {
   ADM: 'Accounts, business rules and platform housekeeping.',
 };
 
-/** Role home (SCR-PLT-01). */
+/** Role home (SCR-PLT-01). The merged Administrator gets the ask / act now / at risk home; role accounts keep their dashboards. */
 export default function HomePage() {
+  const { me } = useAuth();
+  if (me?.merged && me.role !== 'VEN') return <AdminHome />;
+  return <RoleHome />;
+}
+
+function RoleHome() {
   const { me, can } = useAuth();
   const navigate = useNavigate();
   const q = useQuery<Home>({ queryKey: ['home', me?.role], queryFn: () => api.get('/home'), enabled: !!me && me.role !== 'VEN', refetchInterval: 60_000 });
@@ -46,7 +53,6 @@ export default function HomePage() {
         title={`${greeting()}, ${me.name.split(' ')[0]}`} screen="SCR-PLT-01"
         eyebrow={<span>{new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())} · {me.roleLabel}</span>}
         sub={me.merged ? 'Every module in one workspace: PRs, RFQs, approvals, orders, receipts, invoices, integration and administration.' : ROLE_SUB[me.role]}
-        badges={me.role !== 'REQ' ? <Freshness flow="INT-M07" label="SAP POs" /> : undefined}
       />
       {q.isLoading ? <LoadingBlock rows={8} /> : q.error ? <ErrorState error={q.error} retry={q.refetch} /> : q.data && (
         <>

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ShieldCheck, LogIn } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAction } from '@/lib/hooks';
 import { fmtDate } from '@/lib/format';
@@ -37,7 +37,7 @@ export default function RegisterPage() {
         <p className="small" style={{ color: '#7f97b3' }}>Knowteq Equipcare LLP · demo data only</p>
       </section>
       <section className="auth__form">
-        {!token ? <Callout tone="bad" title="This link is incomplete">Open the registration link from your invitation e-mail, or ask your Equipcare buyer to send a new one. <Link to="/login">Back to sign in</Link></Callout>
+        {!token ? <Callout tone="bad" title="This link is incomplete">Open the registration link from your invitation e-mail, or ask your Equipcare buyer to send a new one. <Link to="/">Back to home</Link></Callout>
           : info.isLoading ? <LoadingBlock rows={4} />
             : info.error ? <ErrorState error={info.error} />
               : done ? (
@@ -48,12 +48,12 @@ export default function RegisterPage() {
                   ) : (
                     <>
                       <Callout tone="ok" title={`Welcome, ${f.name.split(' ')[0]}`}>Sign in with <strong>{v?.email}</strong> and your new password. You will confirm each sign-in with a one-time code, then complete your company details and documents.</Callout>
-                      <Button variant="primary" size="lg" icon={<LogIn />} onClick={() => navigate('/login')}>Go to sign in</Button>
+                      <Button variant="primary" size="lg" onClick={() => navigate('/')}>Go to home</Button>
                     </>
                   )}
                 </div>
               ) : v?.status !== 'Invited' ? (
-                <div className="stack"><h2 style={{ fontSize: 'var(--fs-24)' }}>Invitation already used</h2><Callout tone="info">This invitation has already been accepted. <Link to="/login">Sign in</Link> with your e-mail and password.</Callout></div>
+                <div className="stack"><h2 style={{ fontSize: 'var(--fs-24)' }}>Invitation already used</h2><Callout tone="info">This invitation has already been accepted. <Link to="/">Go to home</Link>.</Callout></div>
               ) : v?.expired ? (
                 <div className="stack"><h2 style={{ fontSize: 'var(--fs-24)' }}>Invitation expired</h2><Callout tone="bad" title="This link is no longer valid">It expired on {fmtDate(v.expires_at)}. Ask your Equipcare buyer to send a new invitation.</Callout></div>
               ) : (
@@ -70,7 +70,7 @@ export default function RegisterPage() {
                     </>
                   )}
                   <Button type="submit" variant="primary" size="lg" icon={<ShieldCheck />} loading={reg.busy} disabled={f.name.trim().length < 2 || (!single && (f.password.length < 10 || f.password !== f.confirm))}>{single ? 'Accept invitation' : 'Create account'}</Button>
-                  {!single && <p className="small muted">Already registered? <Link to="/login">Sign in</Link></p>}
+                  {!single && <p className="small muted">Already registered? <Link to="/">Go to home</Link></p>}
                 </form>
               )}
       </section>

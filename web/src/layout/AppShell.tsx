@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Bell, ChevronDown, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Search, UserRound, Repeat2, CloudOff, MoreHorizontal, CheckCheck, Building2, DoorOpen } from 'lucide-react';
+import { Bell, ChevronDown, PanelLeftClose, PanelLeftOpen, Search, UserRound, Repeat2, CloudOff, MoreHorizontal, CheckCheck, Building2, DoorOpen, Store } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuth, useMeta, type RoleCode } from '@/lib/auth';
-import { navFor } from '@/nav';
+import { navFor, workspaceOf } from '@/nav';
+import { WorkspaceTabs } from './WorkspaceTabs';
 import { ago } from '@/lib/format';
 import { Avatar, Badge, Button } from '@/components/ui';
 import { useToast } from '@/components/overlay';
-import { ActAsVendorDialog } from './ActAsVendor';
 
 interface Notif { id: number; title: string; body: string | null; link: string | null; severity: string; read_at: string | null; created_at: string; event: string }
 
@@ -131,8 +131,8 @@ function NotificationBell() {
   );
 }
 
-function UserMenu({ onActAsVendor }: { onActAsVendor: () => void }) {
-  const { me, switchRole, logout, exitVendor } = useAuth();
+function UserMenu({ onOpenVendorPortal, onExitVendorPortal }: { onOpenVendorPortal: () => void; onExitVendorPortal: () => void }) {
+  const { me, switchRole } = useAuth();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -141,10 +141,10 @@ function UserMenu({ onActAsVendor }: { onActAsVendor: () => void }) {
   if (!me) return null;
   return (
     <div style={{ position: 'relative' }} ref={ref}>
-      <button className="btn btn--ghost" onClick={() => setOpen(!open)} aria-expanded={open} aria-haspopup="menu" style={{ height: 44, paddingLeft: 6 }}>
+      <button className="btn btn--ghost" onClick={() => setOpen(!open)} aria-expanded={open} aria-haspopup="menu" style={{ height: 44, padding: '0 8px', gap: 10 }}>
         <Avatar name={me.name} />
-        <span className="desktop-only" style={{ textAlign: 'left', lineHeight: 1.2 }}>
-          <span style={{ display: 'block', fontSize: 'var(--fs-13)', color: 'var(--text)' }}>{me.name}</span>
+        <span className="desktop-only" style={{ textAlign: 'left', lineHeight: 1.25 }}>
+          <span style={{ display: 'block', fontSize: 'var(--fs-13)', fontWeight: 600, color: 'var(--text)' }}>{me.name}</span>
           <span style={{ display: 'block', fontSize: 'var(--fs-11)', color: 'var(--text-3)', fontWeight: 500 }}>{me.vendor ? me.vendor.name : me.roleLabel}</span>
         </span>
         <ChevronDown size={14} aria-hidden />
@@ -155,12 +155,12 @@ function UserMenu({ onActAsVendor }: { onActAsVendor: () => void }) {
           {me.singleUser && (
             <>
               {me.actingVendor ? (
-                <button role="menuitem" className="menu__item" onClick={async () => { setOpen(false); await exitVendor(); navigate('/'); toast('Back in the administrator workspace', 'info'); }}>
+                <button role="menuitem" className="menu__item" onClick={() => { setOpen(false); onExitVendorPortal(); }}>
                   <DoorOpen size={15} aria-hidden /> Exit vendor portal
                 </button>
               ) : (
-                <button role="menuitem" className="menu__item" onClick={() => { setOpen(false); onActAsVendor(); }}>
-                  <Building2 size={15} aria-hidden /> Open the vendor portal as…
+                <button role="menuitem" className="menu__item" onClick={() => { setOpen(false); onOpenVendorPortal(); }}>
+                  <Store size={15} aria-hidden /> Open vendor portal
                 </button>
               )}
               <div className="menu__sep" />
@@ -184,7 +184,6 @@ function UserMenu({ onActAsVendor }: { onActAsVendor: () => void }) {
             </>
           )}
           <button role="menuitem" className="menu__item" onClick={() => { setOpen(false); navigate('/profile'); }}><UserRound size={15} aria-hidden /> Profile & preferences</button>
-          {!me.singleUser && <button role="menuitem" className="menu__item" onClick={async () => { await logout(); navigate('/login'); }}><LogOut size={15} aria-hidden /> Sign out</button>}
         </div>
       )}
     </div>
@@ -192,9 +191,9 @@ function UserMenu({ onActAsVendor }: { onActAsVendor: () => void }) {
 }
 
 export function AppShell() {
-  const { me, can, isVendor, exitVendor } = useAuth();
+  const { me, can, isVendor, actAsVendor, exitVendor } = useAuth();
   const navigate = useNavigate();
-  const [actAs, setActAs] = useState(false);
+  const toast = useToast();
   const meta = useMeta();
   const loc = useLocation();
   const [collapsed, setCollapsed] = useState(() => { try { return localStorage.getItem('rail') === '1'; } catch { return false; } });
@@ -202,10 +201,45 @@ export function AppShell() {
   const counts = useQuery<Record<string, number>>({ queryKey: ['nav-counts'], queryFn: () => api.get('/nav-counts'), refetchInterval: 45_000, enabled: !!me });
   useEffect(() => setDrawer(false), [loc.pathname]);
   if (!me) return null;
+
+  const handleOpenVendorPortal = async () => {
+    try {
+      await actAsVendor(1);
+      navigate('/vendor');
+      toast('Switched to Vendor Portal (Hydrotech Seals & Systems)', 'info');
+    } catch (e) {
+      toast((e as Error).message, 'bad');
+    }
+  };
+
+  const handleExitVendorPortal = async () => {
+    try {
+      await exitVendor();
+      navigate('/');
+      toast('Returned to Administrator Workspace', 'info');
+    } catch (e) {
+      toast((e as Error).message, 'bad');
+    }
+  };
+
+  const toggleSidebar = () => {
+    if (window.innerWidth <= 1024) {
+      setDrawer((d) => !d);
+    } else {
+      setCollapsed((c) => {
+        const next = !c;
+        try { localStorage.setItem('rail', next ? '1' : '0'); } catch { /* ignore */ }
+        return next;
+      });
+    }
+  };
+
   const groups = navFor(isVendor, can, me.vendor?.onboarding_status === 'Active', !!me.merged);
   const flat = groups.flatMap((g) => g.items);
   const mobileItems = flat.filter((i) => i.mobile).slice(0, 4);
-  const isActive = (to: string) => (to === '/' || to === '/vendor' ? loc.pathname === to : loc.pathname === to || loc.pathname.startsWith(to + '/'));
+  const ws = me.merged && !isVendor ? workspaceOf(loc.pathname) : null;
+  const isActive = (to: string) => (to === '/' || to === '/vendor' ? loc.pathname === to : loc.pathname === to || loc.pathname.startsWith(to + '/') || ws?.workspace.to === to);
+  const countOf = (i: { count?: string; counts?: string[] }) => (i.counts ? i.counts.reduce((a, k) => a + (counts.data?.[k] ?? 0), 0) : i.count ? counts.data?.[i.count] : undefined);
 
   return (
     <div className="shell" data-collapsed={collapsed}>
@@ -219,7 +253,7 @@ export function AppShell() {
           <div className="rail__group" key={g.label}>
             <div className="rail__label">{g.label}</div>
             {g.items.map((i) => {
-              const n = i.count ? counts.data?.[i.count] : undefined;
+              const n = countOf(i);
               return (
                 <NavLink key={i.to} to={i.to} end={i.to === '/' || i.to === '/vendor' || i.to === '/admin'} className="rail__item" title={collapsed ? i.label : undefined}
                   aria-current={isActive(i.to) && (i.to !== '/admin' || loc.pathname === '/admin' || loc.pathname.startsWith('/admin/users')) ? 'page' : undefined}>
@@ -232,40 +266,64 @@ export function AppShell() {
           </div>
         ))}
         {me.singleUser && (
-          <div className="rail__group">
-            <div className="rail__label">Vendor portal</div>
-            {me.actingVendor ? (
-              <button className="rail__item" style={{ width: '100%', background: 'none', border: 0, font: 'inherit', textAlign: 'left', cursor: 'pointer' }} title={collapsed ? 'Exit vendor portal' : undefined}
-                onClick={async () => { await exitVendor(); navigate('/'); }}>
-                <DoorOpen aria-hidden /><span className="rail__text">Exit vendor portal</span>
+          <div className="rail__group rail__group--portal">
+            <div className="rail__label">{isVendor ? 'Vendor Session' : 'Vendor Portal'}</div>
+            {isVendor || me.actingVendor ? (
+              <button
+                type="button"
+                className="rail__item rail__item--exit"
+                style={{ width: '100%', font: 'inherit', textAlign: 'left', cursor: 'pointer' }}
+                title={collapsed ? 'Exit vendor portal' : undefined}
+                onClick={handleExitVendorPortal}
+              >
+                <DoorOpen aria-hidden />
+                <span className="rail__text">Exit vendor portal</span>
               </button>
             ) : (
-              <button className="rail__item" style={{ width: '100%', background: 'none', border: 0, font: 'inherit', textAlign: 'left', cursor: 'pointer' }} title={collapsed ? 'Open the vendor portal as…' : undefined} onClick={() => setActAs(true)}>
-                <Building2 aria-hidden /><span className="rail__text">Open as a vendor…</span>
+              <button
+                type="button"
+                className="rail__item rail__item--vendor"
+                style={{ width: '100%', font: 'inherit', textAlign: 'left', cursor: 'pointer' }}
+                title={collapsed ? 'Open vendor portal' : undefined}
+                onClick={handleOpenVendorPortal}
+              >
+                <Store aria-hidden />
+                <span className="rail__text">Open vendor portal</span>
               </button>
             )}
           </div>
         )}
         <div className="rail__foot">
-          Knowteq Equipcare LLP<br />{me.singleUser ? 'Single-user mode · no sign-in · local access only' : 'MVP · demo data'} · SAP, OCR and messaging simulated
+          Knowteq Equipcare LLP<br />{me.singleUser ? 'Single-user mode · no sign-in · local access only' : 'MVP · demo data'} · simulated environment
         </div>
       </nav>
       <div className="main">
         <header className="topbar">
-          <Button variant="ghost" iconOnly icon={<Menu />} className="mobile-only" onClick={() => setDrawer(true)}>Open menu</Button>
-          <Button variant="ghost" iconOnly icon={collapsed ? <PanelLeftOpen /> : <PanelLeftClose />} className="desktop-only" onClick={() => { setCollapsed(!collapsed); try { localStorage.setItem('rail', collapsed ? '0' : '1'); } catch { /* ignore */ } }}>
+          <Button
+            variant="ghost"
+            iconOnly
+            icon={collapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
+            className="topbar__collapse"
+            onClick={toggleSidebar}
+            title={collapsed ? 'Expand navigation' : 'Collapse navigation'}
+            aria-label={collapsed ? 'Expand navigation' : 'Collapse navigation'}
+          >
             {collapsed ? 'Expand navigation' : 'Collapse navigation'}
           </Button>
           <GlobalSearch />
           <div className="grow" />
           <NotificationBell />
-          <UserMenu onActAsVendor={() => setActAs(true)} />
+          <UserMenu onOpenVendorPortal={handleOpenVendorPortal} onExitVendorPortal={handleExitVendorPortal} />
         </header>
         {me.actingVendor && (
-          <div className="banner banner--warn" role="status">
-            <Building2 size={16} aria-hidden />
-            <span className="grow"><strong>Vendor portal view: {me.actingVendor.name}.</strong> You are acting for this vendor; you see only its records, and actions are recorded against the vendor and the Administrator.</span>
-            <Button size="sm" variant="secondary" icon={<DoorOpen />} onClick={async () => { await exitVendor(); navigate('/'); }}>Exit vendor portal</Button>
+          <div className="banner banner--warn banner--vendor" role="status">
+            <Store size={18} aria-hidden />
+            <span className="grow">
+              <strong>Vendor Portal: {me.actingVendor.name}.</strong> Live vendor workspace (SAP 100101).
+            </span>
+            <Button size="sm" variant="decision" icon={<DoorOpen size={15} />} onClick={handleExitVendorPortal}>
+              Exit vendor portal
+            </Button>
           </div>
         )}
         {meta.data?.sapOffline && !isVendor && (
@@ -275,10 +333,10 @@ export function AppShell() {
           </div>
         )}
         <main className="content" id="main">
+          {ws && <WorkspaceTabs workspace={ws.workspace} active={ws.tab} counts={counts.data} />}
           <Outlet />
         </main>
       </div>
-      {me.singleUser && <ActAsVendorDialog open={actAs} onClose={() => setActAs(false)} />}
       <nav className="mobile-nav" aria-label="Quick">
         {mobileItems.map((i) => (
           <NavLink key={i.to} to={i.to} end={i.to === '/' || i.to === '/vendor'} aria-current={isActive(i.to) ? 'page' : undefined}>

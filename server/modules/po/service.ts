@@ -489,8 +489,18 @@ export function logFollowup(actor: Actor, poId: number, input: FollowupInput, op
 }
 
 // ------------------------------------------------------------------ reminders (FR-POM-07, AC-POM-07) and escalation (FR-POM-08)
-type ReminderType = 'ack' | 'dispatch' | 'overdue' | 'documents';
+export type ReminderType = 'ack' | 'dispatch' | 'overdue' | 'documents';
 const REMINDER_LABEL: Record<ReminderType, string> = { ack: 'Acknowledgement reminder', dispatch: 'Dispatch reminder', overdue: 'Delivery overdue reminder', documents: 'Pending documents reminder' };
+
+/** The exact wording sent to the vendor; the insights layer previews it before a buyer sends. */
+export function reminderContent(type: ReminderType, poNo: string, items: string, commitment: string | null) {
+  const title = type === 'ack' ? `Please acknowledge PO ${poNo}` : type === 'overdue' ? `Delivery overdue on PO ${poNo}` : type === 'dispatch' ? `Dispatch due on PO ${poNo}` : `Documents pending on PO ${poNo}`;
+  const body = type === 'ack' ? `Line(s) ${items} are waiting for your acceptance and delivery commitment.`
+    : type === 'overdue' ? `Line(s) ${items} are past the committed date. Dispatch now or update the commitment with a delay reason.`
+    : type === 'dispatch' ? `Line(s) ${items}: dispatch by ${fmtD(commitment)} and submit the ASN.`
+    : `Goods received on line(s) ${items}. Upload the invoice and dispatch documents.`;
+  return { title, body };
+}
 
 export function remind(actor: Actor | null, poId: number, opts: { manual?: boolean; type?: ReminderType; lineIds?: number[]; at?: string } = {}) {
   const po = actor ? mustSee(actor, poId) : getPo(poId);
@@ -514,11 +524,7 @@ export function remind(actor: Actor | null, poId: number, opts: { manual?: boole
   if (!targets.length) throw conflict(`No line of PO ${po.po_no} is waiting for this reminder.`);
   const items = targets.map((x) => x.l.item).join(', ');
   const event = type === 'ack' ? 'NTF-17' : 'NTF-18';
-  const title = type === 'ack' ? `Please acknowledge PO ${po.po_no}` : type === 'overdue' ? `Delivery overdue on PO ${po.po_no}` : type === 'dispatch' ? `Dispatch due on PO ${po.po_no}` : `Documents pending on PO ${po.po_no}`;
-  const body = type === 'ack' ? `Line(s) ${items} are waiting for your acceptance and delivery commitment.`
-    : type === 'overdue' ? `Line(s) ${items} are past the committed date. Dispatch now or update the commitment with a delay reason.`
-    : type === 'dispatch' ? `Line(s) ${items}: dispatch by ${fmtD(targets[0].s.commitment)} and submit the ASN.`
-    : `Goods received on line(s) ${items}. Upload the invoice and dispatch documents.`;
+  const { title, body } = reminderContent(type, po.po_no, items, targets[0].s.commitment);
   const created = notify({ event, title, body, link: `/vendor/pos/${po.id}`, vendorId: po.vendor_id, objectType: 'po', objectId: po.id, severity: type === 'overdue' ? 'danger' : 'warning', dedupeKey: opts.manual ? `${event}:${po.id}:${type}:${ts}` : `${event}:${po.id}:${type}:${targets.map((x) => `${x.l.id}@${x.s.commitment}`).join('|')}` });
   const count = all<FollowupRow>('SELECT * FROM po_followups WHERE po_id = ? AND kind = ?', po.id, 'Reminder').length + 1;
   addFollowup(po.id, targets.length === 1 ? targets[0].l.id : null, actor?.id ?? null, 'Reminder',

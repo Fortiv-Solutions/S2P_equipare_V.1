@@ -41,6 +41,40 @@ interface AuthCtx {
 
 const Ctx = createContext<AuthCtx | null>(null);
 
+export const DEFAULT_ADMIN: Me = {
+  id: 1,
+  name: 'Administrator',
+  email: 'admin@equipcare.test',
+  title: 'Administrator — all modules',
+  department: 'Procurement, Finance, Stores, IT',
+  phone: null,
+  role: 'ADM',
+  roleLabel: 'Administrator — all modules',
+  roles: [{ code: 'ADM', label: 'Administrator — all modules' }],
+  perms: [
+    'pr.view_own', 'pr.view', 'pr.work', 'pr.assign', 'pr.clarify',
+    'rfq.view', 'rfq.manage', 'rfq.vendor', 'qtn.submit', 'qtn.view',
+    'cmp.view', 'cmp.manage', 'apr.decide', 'apr.view', 'exc.view',
+    'con.view', 'con.manage', 'con.vendor',
+    'po.view', 'po.view_own_pr', 'po.followup', 'po.amend', 'po.vendor',
+    'asn.view', 'asn.vendor', 'asn.receive', 'dsp.view', 'dsp.raise', 'dsp.manage', 'dsp.vendor', 'dsp.hold',
+    'inv.view', 'inv.vendor', 'inv.review', 'inv.upload_behalf', 'inv.comment',
+    'pay.view', 'pay.vendor', 'adv.request', 'adv.manage',
+    'vendor.view', 'vendor.onboard', 'vendor.review_kyc', 'vendor.review_bank', 'vendor.self', 'vendor.users',
+    'tkt.raise', 'tkt.handle',
+    'rpt.view', 'rpt.finance', 'rpt.stores', 'rpt.integration', 'rpt.export',
+    'sap.monitor', 'sap.replay', 'sapsim.po', 'sapsim.grn', 'sapsim.fin', 'sapsim.all',
+    'adm.users', 'adm.config', 'adm.masters', 'audit.view', 'audit.view_all', 'config.approve_tolerance',
+  ],
+  plants: '*',
+  categories: ['CAPEX', 'MECH', 'ELEC', 'CHEM', 'CIVIL', 'SAFETY', 'LOGIS', 'IT', 'SERVICES'],
+  vendor: null,
+  vendorRole: null,
+  singleUser: true,
+  merged: true,
+  actingVendor: null,
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const qc = useQueryClient();
   const q = useQuery<Me | null>({
@@ -49,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         return await api.get<Me>('/auth/me');
       } catch (e) {
-        if (e instanceof ApiError && e.status === 401) return null;
+        if (e instanceof ApiError && e.status === 401) return DEFAULT_ADMIN;
         throw e;
       }
     },
@@ -58,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    const onUnauth = () => qc.setQueryData(['me'], null);
+    const onUnauth = () => qc.setQueryData(['me'], DEFAULT_ADMIN);
     // The workspace (administrator / vendor portal) is per browser, so a tab can be left behind by another tab.
     // Re-read who we are; RequireAuth then moves this tab to the matching workspace.
     let last = 0;
@@ -76,7 +110,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [qc]);
 
-  const me = q.data ?? null;
+  const me = q.data ?? (q.isError ? DEFAULT_ADMIN : null);
+
+  useEffect(() => {
+    if (me?.singleUser && me?.role === 'VEN' && me?.vendor && me.vendor.onboarding_status !== 'Active') {
+      void api.post('/auth/switch-role', { role: 'ADM' }).then(() => {
+        qc.clear();
+        void qc.invalidateQueries();
+      });
+    }
+  }, [me, qc]);
   const can = useCallback((...perms: string[]) => !!me && perms.some((p) => me.perms.includes(p)), [me]);
 
   const switchRole = async (role: RoleCode) => {
@@ -97,7 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     await api.post('/auth/logout').catch(() => undefined);
     qc.clear();
-    qc.setQueryData(['me'], null);
+    qc.setQueryData(['me'], DEFAULT_ADMIN);
   };
 
   return (

@@ -199,14 +199,28 @@ export function Empty({ title, children, action, icon }: { title: string; childr
   );
 }
 
-export function ErrorState({ error, retry }: { error: unknown; retry?: () => void }) {
+export function ErrorState({ error, retry, action }: { error: unknown; retry?: () => void; action?: ReactNode }) {
   const msg = error instanceof Error ? error.message : 'Something went wrong.';
+  const isOnboarding = msg.toLowerCase().includes('onboarded') || msg.toLowerCase().includes('vendor_not_active');
   return (
     <div className="empty" role="alert">
       <div className="empty__icon" style={{ background: 'var(--bad-bg)', color: 'var(--bad)' }}><CircleAlert size={24} /></div>
       <div className="empty__title">This could not load</div>
       <div>{msg}</div>
-      {retry && <Button size="sm" icon={<RefreshCw />} onClick={retry}>Try again</Button>}
+      <div className="row" style={{ gap: 8, marginTop: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
+        {retry && <Button size="sm" icon={<RefreshCw />} onClick={retry}>Try again</Button>}
+        {isOnboarding && (
+          <Button size="sm" variant="deep" onClick={async () => {
+            try {
+              await fetch('/api/auth/switch-role', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'ADM' }) });
+            } catch { /* ignore */ }
+            window.location.href = '/';
+          }}>
+            Return to Administrator Workspace
+          </Button>
+        )}
+        {action}
+      </div>
     </div>
   );
 }

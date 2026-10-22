@@ -13,6 +13,7 @@ import { Modal, ReasonDialog, useToast } from '@/components/overlay';
 import { TrackChain } from '@/components/TrackChain';
 import { AuditTrail } from '@/components/AuditTrail';
 import { AckLineForm, type AckPayload } from './AckLineForm';
+import { DeliveryRisk } from './DeliveryRisk';
 import { ACKED, AckRecordNote, AckStatus, CommitCell, CommitDialog, CommitmentHistory, FollowupDialog, FollowupTimeline, SapAckCell, amendmentChain, poChain } from './shared';
 import type { Amendment, PoDetail, PoLineDetail } from './types';
 
@@ -103,6 +104,7 @@ function PoView({ d }: { d: PoDetail }) {
               mobile={{ title: (l) => <>Line {l.item} · {l.description}</>, badge: (l) => <Status value={l.ack_status} />, meta: (l) => [`${fmtNum(l.qty)} ${l.uom}`, l.commit_date ? `Commit ${fmtDate(l.commit_date)}` : `PO date ${fmtDate(l.delivery_date)}`, `Received ${fmtNum(l.received_qty)}`, l.delay_reason ?? '', <span key="n" style={{ color: l.needs_action ? 'var(--bad)' : undefined }}>{l.next_action}</span>] }} />
             {internal && <div style={{ padding: '10px 14px' }}><AckRecordNote mode={d.config.sap_write_ack} /></div>}
           </Card>
+          {canFollow && open && can('po.view') && <DeliveryRisk poId={d.id} />}
         <div className="split">
           <div className="stack">
             <Card title="Follow-up log" actions={canFollow && open ? <Button size="sm" icon={<MessageSquarePlus />} onClick={() => setDialog('followup')}>Log follow-up</Button> : undefined}>

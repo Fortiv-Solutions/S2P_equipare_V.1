@@ -60,6 +60,20 @@ one-time-code sign-in, role-scoped navigation and segregation of duties. Demo ac
 | `PORT`, `HOST` | 4000, `127.0.0.1` | where the API listens |
 | `S2P_ALLOWED_HOSTS` | — | extra host names the single-user server may answer to |
 | `S2P_DATA_DIR` | `data/` | where the database and files live |
+| `ANTHROPIC_API_KEY` | — | optional. With the business rule **AI-worded summaries** switched on, a model rewords one summary paragraph from facts the rules computed. Unset: nothing leaves the server |
+| `S2P_AI_MODEL` | `claude-sonnet-5-5` | model used for that wording |
+
+## How the Administrator workspace is organised
+
+SAP stays the system of record; this app is where collaboration, workflow and follow-up happen. The sidebar has three
+workspaces instead of fifteen modules, and each keeps the module screens one click away in a tab strip:
+
+- **Sourcing**: PR workbench, RFQs, comparisons, approvals, contracts, vendors
+- **Delivery**: purchase orders, ASN & dispatch, expected receipts, disputes, vendor tickets
+- **Finance**: invoices, exception queue, payments & advances
+
+Home is *Ask* (plain-language questions), *Act now* (work that needs you, with a next step) and *At risk* (late deliveries,
+held invoices, blocked payments, low RFQ response, ending contracts, each with its reasons).
 
 ## What is live and what is simulated
 
@@ -71,7 +85,7 @@ one-time-code sign-in, role-scoped navigation and segregation of duties. Demo ac
 | E-mail / SMS / WhatsApp | **Simulated.** Messages are recorded in an outbox marked "not delivered". |
 | Malware scan | Only the EICAR test signature is checked; no antivirus engine is connected. |
 | Single sign-on | Not configured (DEC-12). Internal users sign in with a password. |
-| AI features beyond OCR (PRD Sec 9 enhancements) | Not built — listed in the PRD as proposals needing separate approval. |
+| Assistance layer (delivery risk, invoice explanation, vendor-reply reading, ask box) | **Real, rule-based.** No AI model is needed or connected by default. See [docs/AI_ASSIST.md](docs/AI_ASSIST.md). An optional model only rewords the invoice summary; it is off by default and untested against the live API in this build. |
 
 Unresolved business rules are **configuration**, not code, and carry their PRD decision id (DEC-xx) in Administration → Business rules:
 approval matrix (placeholder), 3-way-match tolerances (zero until jointly approved), landed-cost components, late/risk discount, SLAs,

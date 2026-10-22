@@ -17,14 +17,14 @@ const EVENTS: [string, string][] = [
 ];
 
 export default function ProfilePage() {
-  const { me, logout } = useAuth();
+  const { me } = useAuth();
   const navigate = useNavigate();
   const prefs = useQuery<{ prefs: Record<string, string>; mandatory: string[]; channels: Record<string, boolean> }>({ queryKey: ['prefs'], queryFn: () => api.get('/me/preferences') });
   const [draft, setDraft] = useState<Record<string, string>>({});
   useEffect(() => { if (prefs.data) setDraft(prefs.data.prefs); }, [prefs.data]);
   const save = useAction(() => api.put('/me/preferences', { prefs: draft }), { success: 'Preferences saved', invalidate: [['prefs']] });
   const [pw, setPw] = useState({ current: '', next: '' });
-  const change = useAction(() => api.post('/auth/password', pw), { success: 'Password changed — sign in again', onSuccess: async () => { await logout(); navigate('/login'); } });
+  const change = useAction(() => api.post('/auth/password', pw), { success: 'Password changed', onSuccess: () => { setPw({ current: '', next: '' }); } });
   if (!me) return null;
   return (
     <>

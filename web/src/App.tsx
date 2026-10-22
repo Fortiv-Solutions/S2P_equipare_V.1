@@ -2,7 +2,6 @@ import { Suspense, type ReactNode } from 'react';
 import { createBrowserRouter, Navigate, Outlet, RouterProvider, useLocation, useRouteError, type RouteObject } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import { AppShell } from '@/layout/AppShell';
-import { LoginPage } from '@/pages/auth/LoginPage';
 import { Button, Empty, LoadingBlock } from '@/components/ui';
 import { routes as commonRoutes, publicRoutes } from '@/pages/common/routes';
 import { routes as prRoutes } from '@/pages/pr/routes';
@@ -19,6 +18,7 @@ import { routes as paymentRoutes } from '@/pages/payments/routes';
 import { routes as integrationRoutes } from '@/pages/integration/routes';
 import { routes as reportRoutes } from '@/pages/reports/routes';
 import { routes as adminRoutes } from '@/pages/admin/routes';
+import { routes as workspaceRoutes } from '@/pages/workspace/routes';
 import { SearchX, TriangleAlert } from 'lucide-react';
 
 function Splash() {
@@ -29,23 +29,12 @@ function Splash() {
   );
 }
 
-/**
- * The sign-in screen. In single-user mode the server always acts as the Administrator, so there is always a
- * session and this redirects straight to the workspace; the screen only appears in multi-user mode.
- */
-function LoginGate() {
-  const { me, loading } = useAuth();
-  if (loading) return <Splash />;
-  if (me) return <Navigate to={me.role === 'VEN' ? '/vendor' : '/'} replace />;
-  return <LoginPage />;
-}
-
 /** Signed-in users only; vendors are kept in /vendor and internal users out of it. */
 function RequireAuth({ children }: { children: ReactNode }) {
   const { me, loading } = useAuth();
   const loc = useLocation();
   if (loading) return <Splash />;
-  if (!me) return <Navigate to="/login" replace state={{ from: loc.pathname + loc.search }} />;
+  if (!me) return <Splash />;
   const vendorArea = loc.pathname === '/vendor' || loc.pathname.startsWith('/vendor/');
   const shared = ['/notifications', '/profile'].includes(loc.pathname);
   if (me.role === 'VEN' && !vendorArea && !shared) return <Navigate to="/vendor" replace />;
@@ -76,7 +65,7 @@ const withSuspense = (rs: RouteObject[]): RouteObject[] =>
   rs.map((r) => ({ ...r, element: r.element ? <Suspense fallback={<LoadingBlock rows={6} />}>{r.element}</Suspense> : r.element, children: r.children ? withSuspense(r.children) : undefined }) as RouteObject);
 
 const router = createBrowserRouter([
-  { path: '/login', element: <LoginGate /> },
+  { path: '/login', element: <Navigate to="/" replace /> },
   ...withSuspense([...publicRoutes, ...vendorPublicRoutes]),
   {
     element: <RequireAuth><AppShell /></RequireAuth>,
@@ -87,7 +76,7 @@ const router = createBrowserRouter([
         element: <Outlet />,
         children: withSuspense([
           ...commonRoutes, ...prRoutes, ...rfqRoutes, ...cmpRoutes, ...approvalRoutes, ...contractRoutes, ...poRoutes, ...asnRoutes,
-          ...vendorPortalRoutes, ...vendorRoutes, ...invoiceRoutes, ...paymentRoutes, ...integrationRoutes, ...reportRoutes, ...adminRoutes,
+          ...vendorPortalRoutes, ...vendorRoutes, ...invoiceRoutes, ...paymentRoutes, ...integrationRoutes, ...reportRoutes, ...adminRoutes, ...workspaceRoutes,
           { path: '*', element: <NotFound /> },
         ]),
       },

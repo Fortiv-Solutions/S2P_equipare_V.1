@@ -45,7 +45,15 @@ with sync_playwright() as p:
     api.post(BASE + "/api/auth/switch-role", data={"role": "ADM"})
     pg.goto(BASE + "/login", wait_until="domcontentloaded"); pg.wait_for_timeout(1200)
     print("login route lands on:", pg.url.replace(BASE, "") or "/")
-    for path in nav_paths(pg):
+    rail = nav_paths(pg)
+    # The sidebar has one entry per workspace; the module screens are tabs inside each workspace.
+    tabs = []
+    for w in ("/sourcing", "/delivery", "/finance"):
+        pg.goto(BASE + w, wait_until="domcontentloaded"); pg.wait_for_timeout(1500)
+        tabs += [a.get_attribute("href") for a in pg.locator("nav.wstabs a").all()]
+    extra = ["/pr?view=ageing", "/exceptions", "/receipts", "/my-requirements", "/contracts/renewals", "/contracts/opportunities", "/admin/users", "/admin/config", "/admin/masters", "/admin/jobs", "/admin/outbox", "/admin/ai", "/notifications", "/profile"]
+    print(f"rail items: {len(rail)} | workspace tabs: {len(set(tabs))}")
+    for path in dict.fromkeys([x for x in rail + tabs + extra if x]):
         check(pg, cur, "administrator", path)
 
     vendors = {v["sap_code"] or "ORION": v["id"] for v in api.get(BASE + "/api/auth/acting-vendors").json()}

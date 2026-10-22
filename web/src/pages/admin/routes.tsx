@@ -7,6 +7,7 @@ const ConfigPage = lazy(() => import('./ConfigPage'));
 const MastersPage = lazy(() => import('./MastersPage'));
 const JobsPage = lazy(() => import('./OpsPages').then((m) => ({ default: m.JobsPage })));
 const OutboxPage = lazy(() => import('./OpsPages').then((m) => ({ default: m.OutboxPage })));
+const AiLogPage = lazy(() => import('./AiLogPage'));
 const AuditPage = lazy(() => import('./OpsPages').then((m) => ({ default: m.AuditPage })));
 
 /** Platform administration (SCR-ADM-01..04). `/admin/approval-matrix` is owned by the approvals area. */
@@ -17,5 +18,6 @@ export const routes: RouteObject[] = [
   { path: '/admin/masters', element: <MastersPage /> },
   { path: '/admin/jobs', element: <JobsPage /> },
   { path: '/admin/outbox', element: <OutboxPage /> },
+  { path: '/admin/ai', element: <AiLogPage /> },
   { path: '/audit', element: <AuditPage /> },
 ];

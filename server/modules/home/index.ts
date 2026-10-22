@@ -172,14 +172,14 @@ function admin() {
 }
 
 /** Single-user Administrator: one dashboard drawing on every module, most urgent work first. */
-function administrator(a: Actor) {
+export function administrator(a: Actor, limit = 14) {
   const mgr = manager(a), buy = buyer(a), fin = finance(a), sto = stores(a), sap = sapIt();
   const tiles: Tile[] = [mgr.tiles[0], mgr.tiles[1], buy.tiles[0], buy.tiles[3], fin.tiles[0], sto.tiles[0], sto.tiles[3], sap.tiles[0]];
   const seen = new Set<string>();
   const tasks = [...mgr.tasks, ...buy.tasks, ...fin.tasks, ...sto.tasks, ...sap.tasks]
     .filter((t) => (seen.has(t.link + t.title) ? false : (seen.add(t.link + t.title), true)))
     .sort((x, y) => ['bad', 'decision', 'warn', 'info', 'ok'].indexOf(x.tone ?? 'info') - ['bad', 'decision', 'warn', 'info', 'ok'].indexOf(y.tone ?? 'info'))
-    .slice(0, 14);
+    .slice(0, limit);
   return { tiles, tasks, chart: 'pr-ageing' };
 }
 

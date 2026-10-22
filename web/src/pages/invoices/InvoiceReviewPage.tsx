@@ -12,6 +12,7 @@ import { Modal, ReasonDialog } from '@/components/overlay';
 import { TrackChain, chainFrom } from '@/components/TrackChain';
 import { AuditTrail } from '@/components/AuditTrail';
 import { CommentThread } from '@/components/Thread';
+import { ExplainCard } from './ExplainCard';
 import { ConfBar, OcrNote, OWNER_LABEL, RULE_TONE, RULE_WORD, showVal, type AdvanceInfo, type Exc, type Extracted, type FieldDef, type RuleResult } from './shared';
 
 interface Values { header: Record<string, string | number | null>; lines: Record<string, string | number | null>[]; verified: string[] }
@@ -92,6 +93,7 @@ function Review({ d }: { d: Detail }) {
 
       {tab === 'review' && (
         <div className="stack">
+          {open.length > 0 && can('inv.view') && <ExplainCard invoiceId={d.id} />}
           <div className="split" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)' }}>
             <Card title="Invoice document" actions={d.attachment && <a className="btn btn--ghost btn--sm" href={downloadUrl(`/files/${d.attachment.id}/download`)} target="_blank" rel="noreferrer">Download original</a>}>
               <Preview d={d} focus={focus} />

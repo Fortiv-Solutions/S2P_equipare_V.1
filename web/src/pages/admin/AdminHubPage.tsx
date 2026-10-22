@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Users, SlidersHorizontal, Network, Timer, MailX, History, Stamp, ChevronRight } from 'lucide-react';
+import { Users, SlidersHorizontal, Network, Timer, MailX, History, Stamp, ChevronRight, Sparkles } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { Badge, Card, Loader, PageHeader } from '@/components/ui';
@@ -16,6 +16,7 @@ export default function AdminHubPage() {
     { to: '/admin/masters', icon: Network, title: 'Master mappings', screen: 'SCR-ADM-03', perm: ['adm.masters'], text: 'Buyer assignment matrix, spend categories (minimum vendors, ITC) and material-group to category map.', meta: (s: any) => `${s.matrix_rows} buyer rows · ${s.categories} categories · ${s.groups} material groups` },
     { to: '/admin/jobs', icon: Timer, title: 'Scheduled jobs', screen: 'Jobs', perm: ['adm.config', 'sap.monitor'], text: 'Reminders, escalations, expiry checks and SAP syncs. Run any job now and read the run history.', meta: (s: any) => `${s.job_runs_24h} runs in 24 h${s.jobs_failed_24h ? ` · ${s.jobs_failed_24h} failed` : ''}`, tone: (s: any) => (s.jobs_failed_24h ? 'bad' : undefined) },
     { to: '/admin/outbox', icon: MailX, title: 'Simulated outbox', screen: 'Outbox', perm: ['adm.config', 'sap.monitor'], text: 'E-mail and SMS the platform would send. No provider is connected, so nothing is delivered.', meta: (s: any) => `${s.outbox} messages, none delivered` },
+    { to: '/admin/ai', icon: Sparkles, title: 'AI assistance', screen: 'AI', perm: ['adm.config', 'audit.view'], text: 'What the rules-based assistance suggests, whether an AI model is connected, and what people did with each suggestion.', meta: () => 'Rules by default · model optional' },
     { to: '/audit', icon: History, title: 'Audit log', screen: 'SCR-ADM-04', perm: ['audit.view'], text: 'Hash-chained audit trail with filters, CSV export and chain verification.', meta: (s: any) => `${s.audit_24h} events in 24 h` },
   ].filter((c) => can(...c.perm) && !(me?.merged && c.to === '/audit'));
   return (

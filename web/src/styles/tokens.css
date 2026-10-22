@@ -97,11 +97,11 @@
   --shadow-2: 0 4px 14px rgba(47, 20, 66, 0.08), 0 1px 3px rgba(47, 20, 66, 0.06);
   --shadow-3: 0 18px 48px rgba(29, 11, 43, 0.20), 0 3px 10px rgba(29, 11, 43, 0.10);
 
-  --rail-w: 252px;
-  --rail-w-collapsed: 72px;
+  --rail-w: 250px;
+  --rail-w-collapsed: 78px;
   --topbar-h: 60px;
-  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-  --dur: 160ms;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur: 150ms;
 
   color-scheme: light;
 }

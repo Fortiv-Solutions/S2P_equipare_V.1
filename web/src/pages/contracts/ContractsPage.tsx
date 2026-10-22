@@ -26,7 +26,7 @@ export default function ContractsPage() {
     <>
       <PageHeader
         title="Contracts" screen="SCR-CON-01" eyebrow="Module 6"
-        sub="ARC, outline agreements, fixed discount structures, VMI and fixed-supplier contracts — synced from SAP or created here and sent to SAP."
+        sub="SAP outline agreements stay the official record. Here you track validity, utilisation and compliance, and prepare new contracts for SAP: ARC, OA, fixed discount structures, VMI and fixed-supplier."
         badges={<Freshness flow="INT-M06" label="OAs" />}
         actions={<>
           <ButtonLink to="/contracts/renewals" icon={<CalendarClock size={16} />}>Renewals</ButtonLink>
