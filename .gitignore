@@ -3,3 +3,4 @@ data/
 web/dist
 *.log
 .env
+api-dist/

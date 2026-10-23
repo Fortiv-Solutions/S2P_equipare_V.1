@@ -1,7 +1,11 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build && npm run build:api",
   "outputDirectory": "web/dist",
+  "functions": {
+    "api/index.js": { "includeFiles": "api-dist/**", "maxDuration": 60 }
+  },
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" },
     { "source": "/((?!api/|assets/).*)", "destination": "/index.html" }
   ]
 }
